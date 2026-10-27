@@ -41,7 +41,7 @@ Architecture the user's recent games converge on:
 
 ## Release (itch.io)
 
-Follow the BOK's `Release standard`: `ITCH_DESCRIPTION.md`, `assets/cover.png` (630x500), `assets/screenshots/`, `devlog/YYYYMMDD/`, `tools/build.sh`, `tools/test.sh`, `tools/ship.sh`, and a one-line `shippit.sh` wrapper. `ship.sh` runs tests, builds with `-o:size`, zips `build/web` (with `index.html` at the zip root), and pushes to itch.io **only with `--push`**. `tools/ship.sh` and the `shippit.sh` wrapper exist (copied from `tggd-20seconds`); its itch target slug is a guess until the user creates the page. The itch account is `thegrumpygamedev`; new pages use channel `html`.
+Follow the BOK's `Release standard`: `ITCH_DESCRIPTION.md`, `assets/cover.png` (630x500), `assets/screenshots/`, `devlog/YYYYMMDD/`, `tools/build.sh`, `tools/test.sh`, `tools/ship.sh`, and a one-line `shippit.sh` wrapper. `ship.sh` runs tests, builds with `-o:size`, zips `build/web` (with `index.html` at the zip root), and pushes to itch.io **only with `--push`**. `tools/ship.sh` and the `shippit.sh` wrapper exist (copied from `tggd-20seconds`); the itch page exists at `thegrumpygamedev/table-turners-of-splorr` (created and submitted to the jam on October 27, 2026; the first upload was done by hand in the browser, so `ship.sh --push` is for later updates, and only on the user's say-so). The itch account is `thegrumpygamedev`; new pages use channel `html`.
 
 Rules that apply here:
 

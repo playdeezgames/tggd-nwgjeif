@@ -3,7 +3,7 @@
 # Never commits, never deletes anything but its own zip. Usage: tools/ship.sh [--push]
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# The page does not exist yet; set the slug when the user creates it, e.g. https://thegrumpygamedev.itch.io/table-turners-of-splorr
+# The page exists: https://thegrumpygamedev.itch.io/table-turners-of-splorr
 TARGET="thegrumpygamedev/table-turners-of-splorr:html"
 ZIP="build/table-turners-of-splorr-html5.zip"
 

@@ -1,13 +1,16 @@
 # Itch.io page text
 
-Page: not created yet (the ship target in `tools/ship.sh` is a guess at the slug).
+Page: https://thegrumpygamedev.itch.io/table-turners-of-splorr (itch game id 5242449; public; HTML, played in the browser, 720 by 576, free, custom noun "metaphor", AI disclosure Yes with Graphics, Sounds, Text & Dialog and Code ticked). Created and submitted to the jam through Claude in Chrome on October 27, 2026; the first upload was the zip from `tools/ship.sh`'s build, done by hand in the browser, not with butler.
+Devlog: posted October 27, 2026 (source `devlog/20261027/devlog.md`).
 Jam: https://itch.io/jam/new-wierd-game-jam-fall (New Wierd Game Jam except it's fall; theme "Turntables")
 Pasted in by hand; nothing here is published by the repo.
 Decision (October 27, 2026): the user is **entering the jam** and wants it **very clear that the whole thing is AI made**. Keep the disclosure at the top of the page, in the short description, on the cover and on the title screen.
 
 ## Short description
 
-MADE ENTIRELY BY AI (Claude): a dinner party puzzle about turning actual tables until the right guest gets the knife. Twelve puzzles, nobody saw a thing.
+MADE ENTIRELY BY AI (Claude): turn actual tables at a dinner party until the right guest gets the knife.
+
+(Itch.io caps this at 120 characters; this one is 104.)
 
 ## Paste this as the page description
 
@@ -34,6 +37,6 @@ Walking is free. Only table turns count.
 - **The jam's AI rule:** the jam page says AI content is only allowed if it is "completely obvious that it was made by AI". That is why the disclosure is loud everywhere (page top, short description, cover banner, title screen). If the edit screen has a generative-AI disclosure field, tick it and say the same.
 - Jam dates: submissions open October 26, 2026 at 7 PM and close October 31, 2026 at 7 PM (the jam runs October 27 to November 1, 2026).
 - Other jam rules: no hateful language, excessive gore or nudity; credit assets (m5x7 is credited above).
-- Push target: `thegrumpygamedev/table-turners-of-splorr:html` is a guess; set the real slug in `tools/ship.sh` once the page exists. `tools/ship.sh` tests, builds with `-o:size` and zips; it only pushes with `--push`.
+- Push target: `thegrumpygamedev/table-turners-of-splorr:html` is now the real slug (the page exists). `tools/ship.sh` tests, builds with `-o:size` and zips; it only pushes with `--push`, so later updates go out that way, only when the user says so.
 - On the page's Edit game screen: "Kind of project" HTML, "This file will be played in the browser" ticked, and an embed of 720 by 576 (the game is 240 by 192 and scales to fit).
 - The cover is `assets/cover.png` (630 by 500, `tools/make_cover.py`) and the screenshots are `assets/screenshots/` (`tools/make_shots.sh`, headless Chrome on the real build; run `tools/build.sh` first).
