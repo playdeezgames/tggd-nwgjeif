@@ -1,0 +1,3 @@
+build/
+# stray binary left by `odin test` in the package directory
+src/game/odin
