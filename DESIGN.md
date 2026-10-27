@@ -43,6 +43,7 @@ Six archetypes, each with a fixed grudge that names *another archetype*, not an 
 - **Only the table that was turned resolves.** Other tables are untouched, so a knife that has already struck does not strike again unless a turn brings it round again. "Seen" is a Chebyshev distance of 2 or less from the table tile (the table, its chairs and one more tile), and only when something was attempted at that table that turn (a napkin saving someone counts).
 - The Hound needs no weapon: it bites, and kills, the guest across if that guest's place setting holds a knife. A poisoned cup kills outright, is used up when drunk, and stays put in front of an empty or dead seat. A guest can be hit by a cup and a strike in the same moment; the napkin takes the first.
 - A level is won when every `must_die` guest is dead and no `must_live` guest has died; it is lost if seen, if a `must_live` guest dies, or when the turns run out. Each guest archetype appears at most once per level.
+- 12 levels, easiest first: Soup, Forks, Seen, Cup, Hound, Napkin, Two Tables, Ring, Seen Twice, Tour, Grudge Match, Finale (pars 1, 2, 3, 3, 4, 5, 2, 4, 5, 5, 7, 8). Two Tables is two independent subpuzzles whose turns add up; tables do not otherwise interact.
 - `solve` (native only, `src/game/solver.odin`) is a layered breadth-first search over the real `walk` and `crank`; tests check every level is sound, solvable, and that its `par` equals the solver's minimum.
 
 ### Still open

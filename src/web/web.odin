@@ -83,6 +83,15 @@ tap :: proc "c" () {
 	act()
 }
 
+// QA hook (index.html#level=N, 1-based): jump straight to a level.
+@(export)
+qa_level :: proc "c" (n: i32) {
+	context = runtime.default_context()
+	if n >= 1 && int(n) <= game.LEVEL_COUNT {
+		state = game.load_level(int(n) - 1)
+	}
+}
+
 @(export)
 step :: proc(dt: f64, c: runtime.Context) -> bool {
 	context = runtime.default_context()

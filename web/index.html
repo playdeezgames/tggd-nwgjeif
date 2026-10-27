@@ -72,6 +72,14 @@
     }
   };
   const memory = new odin.WasmMemoryInterface();
+  // QA: index.html#level=7 jumps to level 7 (used for screenshots).
+  const qa = /^#level=([0-9]+)$/.exec(location.hash);
+  if (qa) {
+    const t = setInterval(() => {
+      const ex = memory.exports;
+      if (ex && ex.qa_level) { clearInterval(t); ex.qa_level(Number(qa[1])); }
+    }, 50);
+  }
   cv.addEventListener("pointerdown", () => {
     if (memory.exports && memory.exports.tap) memory.exports.tap();
   });
