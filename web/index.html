@@ -9,10 +9,33 @@
   body { display: flex; align-items: center; justify-content: center; }
   canvas { image-rendering: pixelated; touch-action: none;
            width: min(100vw, calc(100vh * 240 / 192)); }
+  #pad { display: none; position: fixed; left: 0; right: 0; bottom: 0; padding: 12px;
+         justify-content: space-between; align-items: flex-end; pointer-events: none;
+         user-select: none; -webkit-user-select: none; }
+  body.touch #pad { display: flex; }
+  #pad button { pointer-events: auto; touch-action: none; font: bold 18px monospace; color: #f4f4f4;
+                background: rgba(244,244,244,.18); border: 2px solid rgba(244,244,244,.45);
+                border-radius: 12px; }
+  #pad button.on { background: rgba(244,180,27,.55); }
+  #dpad { display: grid; grid-template: repeat(3, 52px) / repeat(3, 52px); gap: 4px; }
+  #side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  #act { width: 92px; height: 92px; border-radius: 50% !important; }
+  #reset { width: 72px; height: 36px; font-size: 13px !important; }
 </style>
 </head>
 <body>
 <canvas id="screen" width="240" height="192"></canvas>
+<div id="pad">
+  <div id="dpad">
+    <span></span><button data-code="0" data-repeat aria-label="up">&#9650;</button><span></span>
+    <button data-code="2" data-repeat aria-label="left">&#9664;</button><span></span><button data-code="3" data-repeat aria-label="right">&#9654;</button>
+    <span></span><button data-code="1" data-repeat aria-label="down">&#9660;</button><span></span>
+  </div>
+  <div id="side">
+    <button id="reset" data-code="5" aria-label="try the level again">RESET</button>
+    <button id="act" data-code="4" aria-label="crank">CRANK</button>
+  </div>
+</div>
 <script type="text/javascript" src="odin.js"></script>
 <script>
   const cv = document.getElementById("screen");
@@ -96,9 +119,46 @@
       if (ex && ex.qa_level) { clearInterval(t); ex.qa_level(Number(qa[1])); }
     }, 50);
   }
-  cv.addEventListener("pointerdown", () => {
-    if (memory.exports && memory.exports.tap) memory.exports.tap();
+  // A tap on the canvas goes to the game in logical pixels (240 by 192).
+  cv.addEventListener("pointerdown", (e) => {
+    const ex = memory.exports;
+    if (!ex || !ex.tap_at) return;
+    const r = cv.getBoundingClientRect();
+    ex.tap_at(Math.floor((e.clientX - r.left) * cv.width / r.width), Math.floor((e.clientY - r.top) * cv.height / r.height));
   });
+
+  // The on-screen pad shows on touch devices; the game is told so its title names it.
+  let padShown = false;
+  const syncTouchUi = () => {
+    if (!padShown) return true;
+    const ex = memory.exports;
+    if (ex && ex.set_touch_ui) { ex.set_touch_ui(1); return true; }
+    return false;
+  };
+  const showPad = () => {
+    document.body.classList.add("touch");
+    padShown = true;
+    if (!syncTouchUi()) { const t = setInterval(() => { if (syncTouchUi()) clearInterval(t); }, 50); }
+  };
+  if (window.matchMedia && matchMedia("(pointer: coarse)").matches) showPad();
+  window.addEventListener("touchstart", showPad, { once: true, passive: true });
+  // Direction buttons repeat while held; the others fire once.
+  for (const b of document.querySelectorAll("#pad button")) {
+    const code = Number(b.dataset.code);
+    let delay = null, timer = null;
+    const press = () => { if (memory.exports && memory.exports.pad) memory.exports.pad(code); };
+    const stop = () => { clearTimeout(delay); clearInterval(timer); b.classList.remove("on"); };
+    b.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      try { b.setPointerCapture(e.pointerId); } catch (err) {}
+      b.classList.add("on");
+      press();
+      if (b.hasAttribute("data-repeat")) {
+        delay = setTimeout(() => { timer = setInterval(press, 130); }, 320);
+      }
+    });
+    for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) b.addEventListener(ev, stop);
+  }
   odin.runWasm("game.wasm", null, {
     canvas: {
       fill_rect: (x, y, w, h, rgb, alpha) => {

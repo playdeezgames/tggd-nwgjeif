@@ -50,6 +50,30 @@ tables_and_chairs_are_solid :: proc(t: ^testing.T) {
 }
 
 @(test)
+tapping_a_tile_walks_round_the_table :: proc(t: ^testing.T) {
+	g := fixture({.Baron, .None, .Widow, .None}, {})
+	g.player = {7, 2} // above the north chair; the table is at (7, 4)
+	testing.expect(t, walk_to(&g, 7, 6)) // below the south chair
+	testing.expect_value(t, g.player, [2]int{7, 6})
+	testing.expect_value(t, g.turns_used, 0) // walking is free
+}
+
+@(test)
+tapping_somewhere_you_cannot_stand_does_nothing :: proc(t: ^testing.T) {
+	g := fixture({.Baron, .None, .Widow, .None}, {})
+	start := g.player
+	testing.expect(t, !walk_to(&g, 7, 4)) // the table
+	testing.expect(t, !walk_to(&g, 7, 3)) // a chair
+	testing.expect(t, !walk_to(&g, -1, 0))
+	testing.expect(t, !walk_to(&g, COLS, 0))
+	testing.expect(t, !walk_to(&g, 0, ROWS))
+	testing.expect(t, !walk_to(&g, start.x, start.y)) // already there
+	testing.expect_value(t, g.player, start)
+	g.outcome = .Lost_Caught
+	testing.expect(t, !walk_to(&g, 0, 0))
+}
+
+@(test)
 turning_moves_place_settings_round_the_guests :: proc(t: ^testing.T) {
 	g := fixture({.Baron, .None, .Widow, .None}, {.Knife, .Napkin, .None, .Marital_Aid})
 	turn_table(&g, 0, .Clockwise)

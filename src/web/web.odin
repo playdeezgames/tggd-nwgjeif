@@ -83,11 +83,48 @@ on_key_down :: proc(e: js.Event) {
 	}
 }
 
-// Called by the page on a tap of the canvas.
+touch_ui: bool // the page is showing the on-screen pad, so the title names it
+
+// Called by the page when it shows the on-screen pad.
 @(export)
-tap :: proc "c" () {
+set_touch_ui :: proc "c" (on: i32) {
+	touch_ui = on != 0
+}
+
+// A tap on the canvas, in logical pixels. Start or go on when asked; otherwise tap a tile to walk there,
+// or tap the tile you are standing on to crank.
+@(export)
+tap_at :: proc "c" (x, y: i32) {
 	context = runtime.default_context()
-	act()
+	if state.phase != .Playing || state.outcome != .Undecided {
+		act()
+		return
+	}
+	if int(y) < game.HUD_H {
+		return
+	}
+	tile := [2]int{int(x) / game.TILE, (int(y) - game.HUD_H) / game.TILE}
+	if tile == state.player {
+		act()
+	} else {
+		game.walk_to(&state, tile.x, tile.y)
+	}
+}
+
+// The on-screen pad: 0 to 3 walk (up, down, left, right), 4 crank, 5 restart the level.
+@(export)
+pad :: proc "c" (code: i32) {
+	context = runtime.default_context()
+	switch code {
+	case 0 ..= 3:
+		game.walk(&state, game.Dir(code))
+	case 4:
+		act()
+	case 5:
+		if state.phase == .Playing {
+			game.restart(&state)
+		}
+	}
 }
 
 // QA hook (index.html#level=N, 1-based): jump straight to a level.
@@ -125,8 +162,16 @@ draw :: proc() {
 	if state.phase == .Title {
 		draw_text(cx, 50, "Table Turners", 0xf4f4f4, 3, true)
 		draw_text(cx, 74, "of SPLORR!!", 0xffec27, 3, true)
-		draw_text(cx, 110, "Turn the tables. Betray everyone.", 0x94b0c2, 1, true)
-		draw_text(cx, 170, "Press Space or tap to start", 0xf4b41b, 1, true)
+		draw_text(cx, 100, "Turn the tables. Betray everyone.", 0x94b0c2, 1, true)
+		if touch_ui {
+			draw_text(cx, 128, "Tap a tile to walk there.", 0x94b0c2, 1, true)
+			draw_text(cx, 140, "Tap yourself on a crank to turn it.", 0x94b0c2, 1, true)
+			draw_text(cx, 170, "Tap to start", 0xf4b41b, 1, true)
+		} else {
+			draw_text(cx, 128, "Arrows or WASD to walk, Space to crank.", 0x94b0c2, 1, true)
+			draw_text(cx, 140, "R tries the level again.", 0x94b0c2, 1, true)
+			draw_text(cx, 170, "Press Space to start", 0xf4b41b, 1, true)
+		}
 		return
 	}
 	T :: game.TILE

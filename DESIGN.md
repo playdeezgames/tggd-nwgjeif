@@ -41,6 +41,10 @@ Six archetypes, each with a fixed grudge that names *another archetype*, not an 
 
 Sweetie-16 palette (colour 0 transparent); 18 sprites in the Anvil world `table-turners` (the six guests, a dead-guest skull, chair, table, five items, two crank arrows, a wound marker, the waiter you play); seven PLAY-text sounds (crank, strike, drink, saved, caught, won, lost). The font stays m5x7. Items are 8x8 pictures, so four fit round one table tile but are cramped; if that reads badly in play, the fix is a bigger tabletop rather than smaller art.
 
+### Controls as built
+
+Keyboard: arrows or WASD walk, Space or Enter cranks (and starts, and goes on after a level), R restarts. Touch: tap a hall tile to walk there (one instant move, free, only if reachable on foot), tap the tile you stand on to crank, plus an on-screen D-pad, CRANK and RESET (the page's `pad(code)` export). Tapping is in logical 240 by 192 pixels via the `tap_at(x, y)` export.
+
 ### Rules as built (src/game)
 
 - A table is one tile with four chairs on its orthogonal neighbours (seat 0 north, 1 east, 2 south, 3 west); the chairs and the table are solid. The hall is 15 by 11 tiles under a 16 px HUD row.

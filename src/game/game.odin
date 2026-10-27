@@ -215,6 +215,39 @@ walk :: proc(g: ^Game, d: Dir) -> bool {
 	return true
 }
 
+DIR_OFFSETS := [4][2]int{{0, -1}, {0, 1}, {-1, 0}, {1, 0}}
+
+// Tap-to-walk: go to any tile reachable on foot. Walking is free, so this is one instant move; the route
+// round tables and chairs is only checked, not drawn. Returns whether the player moved.
+walk_to :: proc(g: ^Game, x, y: int) -> bool {
+	if g.phase != .Playing || g.outcome != .Undecided || blocked(&g.lv, x, y) || g.player == {x, y} {
+		return false
+	}
+	reached: [ROWS][COLS]bool
+	queue: [ROWS * COLS][2]int
+	head, tail := 0, 1
+	queue[0] = g.player
+	reached[g.player.y][g.player.x] = true
+	for head < tail {
+		p := queue[head]
+		head += 1
+		for off in DIR_OFFSETS {
+			n := p + off
+			if blocked(&g.lv, n.x, n.y) || reached[n.y][n.x] {
+				continue
+			}
+			reached[n.y][n.x] = true
+			queue[tail] = n
+			tail += 1
+		}
+	}
+	if !reached[y][x] {
+		return false
+	}
+	g.player = {x, y}
+	return true
+}
+
 // Turn the table whose crank the player is standing on. Returns whether a table turned.
 crank :: proc(g: ^Game) -> bool {
 	if g.phase != .Playing || g.outcome != .Undecided || g.turns_used >= g.lv.turn_limit {
