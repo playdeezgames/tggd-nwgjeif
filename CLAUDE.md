@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## State of the repo
 
-Scaffolded and building: a title screen, then a 15x12 hall (16 px tiles, 240x192 screen) where the player walks with arrows/WASD. There are no tables, guests, items, cranks or levels yet; the chosen concept is the grid puzzle **Seating Arrangements** (see `DESIGN.md`, which also holds the parked idle-game concept "Table Turners Inc." that another session will build; do not build it here). Task status is in Coxswain.
+The rules core and three starter levels (Soup, Seen, Napkin) are built and playable: a title screen, then a 15x11 hall (16 px tiles, 240x192 screen with a 16 px HUD row) where the player walks (arrows/WASD), cranks (Space) and restarts (R); tables, guests and items are placeholder letters, with no art, sound or touch pad yet. About 12 levels are still to design (Coxswain task); the chosen concept is the grid puzzle **Seating Arrangements** (see `DESIGN.md`, which also holds the parked idle-game concept "Table Turners Inc." that another session will build; do not build it here). Task status is in Coxswain.
 
 ```bash
-tools/test.sh                 # native tests of src/game + odin check of both packages for js_wasm32
+tools/test.sh                 # native tests of src/game (rules, level checks and a BFS solver) + odin check of both packages for js_wasm32
 tools/build.sh [--size]       # builds build/web (game.wasm, odin.js, index.html, font.png); --size for shipping
 python3 -m http.server -d build/web 8000   # serve it; wasm cannot load from file://
-odin test src/game -collection:tggd=src -define:ODIN_TEST_THREADS=1 -define:ODIN_TEST_NAMES=game.player_stays_in_the_hall   # a single test
+odin test src/game -collection:tggd=src -define:ODIN_TEST_THREADS=1 -define:ODIN_TEST_NAMES=game.knife_kills_the_grudge_target_across   # a single test
 tools/ship.sh [--push]        # tests, size build, zip; pushes to itch.io ONLY with --push (never without the user's say-so)
 ```
 
