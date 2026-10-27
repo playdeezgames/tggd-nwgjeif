@@ -45,6 +45,13 @@ for name, (dx, dy) in (("Chair", (0, -1)), ("Chair", (1, 0)), ("Chair", (0, 1)),
 put("Baron", 0, -1); put("Dead", 0, 1); put("Chef", 1, 0); put("Hound", -1, 0)
 put("Wound", 0, 1)
 put("Knife", 0, 0, (0, -5 * K)); put("Fork", 0, 0, (5 * K, 0)); put("Napkin", 0, 0, (-5 * K, 0)); put("Cup", 0, 0, (0, 5 * K))
-put("Player", 2, 1); put("Crank_Cw", 3, 1)
+put("Player", 2, 1)
+# The disclosure, as loud as the title.
+d = ImageDraw.Draw(img)
+d.rectangle((0, 462, W, H), fill=(0x00, 0x00, 0x00, 255))
+d.rectangle((0, 462, W, 465), fill=(0xff, 0x77, 0xa8, 255))
+tag = "MADE ENTIRELY BY AI (CLAUDE)"
+tagfont = ImageFont.truetype(FONT, 20)
+d.text(((W - d.textlength(tag, font=tagfont)) / 2, 474), tag, font=tagfont, fill="#ff77a8")
 img.convert("RGB").save("assets/cover.png")
 print("assets/cover.png", img.size)

@@ -3,12 +3,15 @@
 Page: not created yet (the ship target in `tools/ship.sh` is a guess at the slug).
 Jam: https://itch.io/jam/new-wierd-game-jam-fall (New Wierd Game Jam except it's fall; theme "Turntables")
 Pasted in by hand; nothing here is published by the repo.
+Decision (October 27, 2026): the user is **entering the jam** and wants it **very clear that the whole thing is AI made**. Keep the disclosure at the top of the page, in the short description, on the cover and on the title screen.
 
 ## Short description
 
-A dinner party Metaphor: turn the tables, literally, until the right guest gets the knife. Twelve puzzles, nobody saw a thing.
+MADE ENTIRELY BY AI (Claude): a dinner party puzzle about turning actual tables until the right guest gets the knife. Twelve puzzles, nobody saw a thing.
 
 ## Paste this as the page description
+
+**THIS METAPHOR WAS MADE ENTIRELY BY AI.** The code, the pixel art, the sound effects, the puzzles and this page were all made by Claude (generative AI, by Anthropic), working alongside TheGrumpyGameDev, who chose the idea and every rule. No part of it is hand-drawn, hand-written or hand-coded. It says so on the cover, on the title screen and here, so that nobody has to wonder.
 
 Everyone at this dinner wants someone else dead. You are only the waiter.
 
@@ -24,14 +27,13 @@ You never touch a knife. You only work the cranks. Cranks are linked to their ta
 
 Walking is free. Only table turns count.
 
-**Made with:** Odin, compiled to WebAssembly, drawing to a plain 2D canvas. The pixel art and the sound effects were made in the Anvil of SPLORR!!, TheGrumpyGameDev's own asset tools. The text is the m5x7 pixel font by Daniel Linssen (managore), CC0. The code, the art, the sounds and the puzzles were all made with Claude (generative AI) working alongside TheGrumpyGameDev, who chose the idea and every rule.
+**Made with:** Odin, compiled to WebAssembly, drawing to a plain 2D canvas. The pixel art and the sound effects were made in the Anvil of SPLORR!!, TheGrumpyGameDev's own asset tools, by Claude. The text is the m5x7 pixel font by Daniel Linssen (managore), CC0, the only part not made by AI. **Everything else is AI made.**
 
 ## Notes (not for the page)
 
-- **Check the jam's AI rule before entering.** The jam page says you cannot add AI content "UNLESS it is completely obvious that it was made by AI". This game's code, art and sound were all made with Claude, and that is not obvious to a player. The user has to decide whether to enter, enter with a bolder disclosure, or release it outside the jam as a normal page (as was done with The End of the World Was Nice).
+- **The jam's AI rule:** the jam page says AI content is only allowed if it is "completely obvious that it was made by AI". That is why the disclosure is loud everywhere (page top, short description, cover banner, title screen). If the edit screen has a generative-AI disclosure field, tick it and say the same.
 - Jam dates: submissions open October 26, 2026 at 7 PM and close October 31, 2026 at 7 PM (the jam runs October 27 to November 1, 2026).
 - Other jam rules: no hateful language, excessive gore or nudity; credit assets (m5x7 is credited above).
 - Push target: `thegrumpygamedev/table-turners-of-splorr:html` is a guess; set the real slug in `tools/ship.sh` once the page exists. `tools/ship.sh` tests, builds with `-o:size` and zips; it only pushes with `--push`.
 - On the page's Edit game screen: "Kind of project" HTML, "This file will be played in the browser" ticked, and an embed of 720 by 576 (the game is 240 by 192 and scales to fit).
 - The cover is `assets/cover.png` (630 by 500, `tools/make_cover.py`) and the screenshots are `assets/screenshots/` (`tools/make_shots.sh`, headless Chrome on the real build; run `tools/build.sh` first).
-- If the edit screen has a generative-AI disclosure field, fill it in to match the "Made with" paragraph.

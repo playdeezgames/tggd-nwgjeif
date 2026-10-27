@@ -162,15 +162,17 @@ draw :: proc() {
 	if state.phase == .Title {
 		draw_text(cx, 50, "Table Turners", 0xf4f4f4, 3, true)
 		draw_text(cx, 74, "of SPLORR!!", 0xffec27, 3, true)
-		draw_text(cx, 100, "Turn the tables. Betray everyone.", 0x94b0c2, 1, true)
+		draw_text(cx, 96, "Turn the tables. Betray everyone.", 0x94b0c2, 1, true)
 		if touch_ui {
 			draw_text(cx, 128, "Tap a tile to walk there.", 0x94b0c2, 1, true)
 			draw_text(cx, 140, "Tap yourself on a crank to turn it.", 0x94b0c2, 1, true)
-			draw_text(cx, 170, "Tap to start", 0xf4b41b, 1, true)
+			draw_text(cx, 160, "MADE ENTIRELY BY AI (Claude)", 0xff77a8, 1, true)
+			draw_text(cx, 180, "Tap to start", 0xf4b41b, 1, true)
 		} else {
 			draw_text(cx, 128, "Arrows or WASD to walk, Space to crank.", 0x94b0c2, 1, true)
 			draw_text(cx, 140, "R tries the level again.", 0x94b0c2, 1, true)
-			draw_text(cx, 170, "Press Space to start", 0xf4b41b, 1, true)
+			draw_text(cx, 160, "MADE ENTIRELY BY AI (Claude)", 0xff77a8, 1, true)
+			draw_text(cx, 180, "Press Space to start", 0xf4b41b, 1, true)
 		}
 		return
 	}
