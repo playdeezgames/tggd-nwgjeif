@@ -111,12 +111,17 @@
   };
   for (const ev of ["keydown", "pointerdown"]) window.addEventListener(ev, unlock);
   const memory = new odin.WasmMemoryInterface();
-  // QA: index.html#level=7 jumps to level 7 (used for screenshots).
-  const qa = /^#level=([0-9]+)$/.exec(location.hash);
+  // QA: index.html#level=7 jumps to level 7; #level=7&keys=DRRC then plays pad presses (U D L R walk, C crank,
+  // X restart), used by tools/make_shots.sh for screenshots.
+  const qa = /^#level=([0-9]+)(?:&keys=([UDLRCX]*))?$/.exec(location.hash);
   if (qa) {
     const t = setInterval(() => {
       const ex = memory.exports;
-      if (ex && ex.qa_level) { clearInterval(t); ex.qa_level(Number(qa[1])); }
+      if (ex && ex.qa_level && ex.pad) {
+        clearInterval(t);
+        ex.qa_level(Number(qa[1]));
+        for (const ch of qa[2] || "") ex.pad({ U: 0, D: 1, L: 2, R: 3, C: 4, X: 5 }[ch]);
+      }
     }, 50);
   }
   // A tap on the canvas goes to the game in logical pixels (240 by 192).
