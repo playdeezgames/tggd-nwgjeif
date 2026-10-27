@@ -18,6 +18,9 @@
   const cv = document.getElementById("screen");
   const ctx = cv.getContext("2d");
   ctx.imageSmoothingEnabled = false;
+  const atlas = new Image();
+  atlas.src = "art.png";
+  const SPRITE = 16;
   const css = (rgb) => "#" + (rgb >>> 0).toString(16).padStart(6, "0");
   // Bitmap font: m5x7, ASCII 32..126 in a 16x6 grid of 8x9 cells, 7 rows above the baseline.
   const FONT_W = 8, FONT_H = 9, FONT_BASE = 7;
@@ -71,6 +74,19 @@
       px += fontAdvance[i] * scale;
     }
   };
+  // Order must match `Sound` in src/game/art.odin.
+  const SOUND_FILES = ["crank", "strike", "drink", "saved", "caught", "won", "lost"].map(n => "sfx/" + n + ".wav");
+  const sounds = [];
+  let audio = null;
+  const unlock = () => {
+    if (audio) return;
+    try {
+      audio = new (window.AudioContext || window.webkitAudioContext)();
+      SOUND_FILES.forEach((f, i) => fetch(f).then(r => r.arrayBuffer())
+        .then(b => audio.decodeAudioData(b)).then(buf => { sounds[i] = buf; }).catch(() => {}));
+    } catch (e) { audio = null; }
+  };
+  for (const ev of ["keydown", "pointerdown"]) window.addEventListener(ev, unlock);
   const memory = new odin.WasmMemoryInterface();
   // QA: index.html#level=7 jumps to level 7 (used for screenshots).
   const qa = /^#level=([0-9]+)$/.exec(location.hash);
@@ -87,6 +103,20 @@
     canvas: {
       fill_rect: (x, y, w, h, rgb, alpha) => {
         ctx.globalAlpha = alpha; ctx.fillStyle = css(rgb); ctx.fillRect(x, y, w, h); ctx.globalAlpha = 1;
+      },
+      blit: (sprite, x, y, alpha) => {
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(atlas, sprite * SPRITE, 0, SPRITE, SPRITE, Math.round(x), Math.round(y), SPRITE, SPRITE);
+        ctx.globalAlpha = 1;
+      },
+      play_sound: (id) => {
+        if (!audio || !sounds[id]) return;
+        const src = audio.createBufferSource();
+        src.buffer = sounds[id];
+        const gain = audio.createGain();
+        gain.gain.value = 0.3;
+        src.connect(gain).connect(audio.destination);
+        src.start();
       },
       draw_text: (x, y, ptr, len, rgb, scale, centered) => {
         drawBitmapText(x, y, memory.loadString(ptr, len), rgb, scale, centered);

@@ -12,27 +12,14 @@ foreign import canvas "canvas"
 foreign canvas {
 	// rgb is 0xRRGGBB; coordinates are logical pixels, y down.
 	fill_rect :: proc(x, y, w, h: f32, rgb: u32, alpha: f32) ---
+	// Draw a sprite from the atlas (build/web/art.png) with its top-left at x, y.
+	blit :: proc(sprite: i32, x, y: f32, alpha: f32) ---
+	play_sound :: proc(sound: i32) ---
 	// Bitmap text (m5x7). y is the baseline; scale is a whole number; x is the centre when centered.
 	draw_text :: proc(x, y: f32, text: string, rgb: u32, scale: i32, centered: bool) ---
 }
 
 state: game.Game
-
-GUEST_COLORS := [game.Guest_Id]u32 {
-	.None   = 0x566c86,
-	.Baron  = 0xb13e53,
-	.Widow  = 0x5d275d,
-	.Cousin = 0x38b764,
-	.Chef   = 0xffa300,
-	.Vicar  = 0x29adff,
-	.Hound  = 0xa7f070,
-}
-GUEST_LETTERS := [game.Guest_Id]string {
-	.None = "", .Baron = "B", .Widow = "W", .Cousin = "C", .Chef = "H", .Vicar = "V", .Hound = "D",
-}
-ITEM_LETTERS := [game.Item]string {
-	.None = "", .Knife = "k", .Fork = "f", .Poisoned_Cup = "p", .Napkin = "n", .Marital_Aid = "m",
-}
 
 main :: proc() {
 	state = game.init()
@@ -45,11 +32,31 @@ act :: proc() {
 	case state.phase == .Title:
 		game.begin(&state)
 	case state.outcome == .Undecided:
-		game.crank(&state)
+		if game.crank(&state) {
+			play_report()
+		}
 	case state.outcome == .Won:
 		game.advance(&state)
 	case:
 		game.restart(&state)
+	}
+}
+
+// Sounds for what the last table turn did.
+play_report :: proc() {
+	play_sound(i32(game.Sound.Crank))
+	for e in state.report[:state.report_len] {
+		#partial switch e.kind {
+		case .Stabbed, .Bitten, .Wounded: play_sound(i32(game.Sound.Strike))
+		case .Drank:                      play_sound(i32(game.Sound.Drink))
+		case .Napkin_Saved:               play_sound(i32(game.Sound.Saved))
+		}
+	}
+	#partial switch state.outcome {
+	case .Won:         play_sound(i32(game.Sound.Won))
+	case .Lost_Caught: play_sound(i32(game.Sound.Caught))
+	case .Undecided:
+	case:              play_sound(i32(game.Sound.Lost))
 	}
 }
 
@@ -134,29 +141,31 @@ draw :: proc() {
 		for c in tb.cranks {
 			if c.present {
 				x, y := tile_xy(c.pos)
-				fill_rect(x + 2, y + 2, T - 4, T - 4, 0x73eff7, 1)
-				draw_text(x + 8, y + 12, c.spin == .Clockwise ? ">" : "<", 0x1a1c2c, 1, true)
+				blit(i32(c.spin == .Clockwise ? game.Sprite.Crank_Cw : game.Sprite.Crank_Ccw), x, y, 1)
 			}
 		}
 		tx, ty := tile_xy(tb.pos)
-		fill_rect(tx, ty, T, T, 0x8b5a2b, 1)
+		blit(i32(game.Sprite.Table), tx, ty, 1)
 		for s in 0 ..< game.SEATS {
 			off := game.SEAT_OFFSETS[s]
 			who := tb.seats[s]
 			x, y := tile_xy(tb.pos + off)
-			alive := who == .None || state.guests[who].alive
-			fill_rect(x + 1, y + 1, T - 2, T - 2, alive ? GUEST_COLORS[who] : 0x333c57, 1)
-			letter := alive ? GUEST_LETTERS[who] : "x"
-			draw_text(x + 8, y + 12, letter, 0xf4f4f4, 1, true)
-			if who != .None && state.guests[who].wounds > 0 && alive {
-				fill_rect(x + 1, y + 1, 4, 4, 0xff0044, 1)
+			blit(i32(game.Sprite.Chair), x, y, 1)
+			if who != .None {
+				alive := state.guests[who].alive
+				blit(i32(alive ? game.GUEST_SPRITES[who] : game.Sprite.Dead), x, y, 1)
+				if alive && state.guests[who].wounds > 0 {
+					blit(i32(game.Sprite.Wound), x, y, 1)
+				}
 			}
 			// The place setting sits on the table tile, towards its seat.
-			draw_text(tx + 8 + f32(off.x * 4), ty + 10 + f32(off.y * 4), ITEM_LETTERS[tb.places[s]], 0xf4f4f4, 1, true)
+			if item := tb.places[s]; item != .None {
+				blit(i32(game.ITEM_SPRITES[item]), tx + f32(off.x * 5), ty + f32(off.y * 5), 1)
+			}
 		}
 	}
 	px, py := tile_xy(state.player)
-	fill_rect(px + 3, py + 3, T - 6, T - 6, 0xf4f4f4, 1)
+	blit(i32(game.Sprite.Player), px, py, 1)
 
 	fill_rect(0, 0, game.SCREEN_W, game.HUD_H, 0x000000, 1)
 	draw_text(4, 11, state.lv.name, 0xffec27, 1, false)

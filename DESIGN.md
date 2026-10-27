@@ -37,6 +37,10 @@ Six archetypes, each with a fixed grudge that names *another archetype*, not an 
 - **Crank direction:** fixed per crank, shown by an arrow on it; the level designer chooses. Four turns return a table to its start, which keeps the solver state small.
 - **Resolution order of one turn:** (1) the crank's table turns one step; (2) all effects are worked out at once from the new arrangement: poisoned cups hit the guest at their place, and each weapon holder whose grudge target is across strikes them; a napkin cancels the first incoming effect on its guest and is used up; (3) wounds are added and anyone at two wounds, or hit by a knife or a cup, dies; simultaneous strikes all land, so two guests can kill each other; (4) the caught check runs against every table where a strike, wound, cup or death happened this turn.
 
+### Art and sound as built
+
+Sweetie-16 palette (colour 0 transparent); 18 sprites in the Anvil world `table-turners` (the six guests, a dead-guest skull, chair, table, five items, two crank arrows, a wound marker, the waiter you play); seven PLAY-text sounds (crank, strike, drink, saved, caught, won, lost). The font stays m5x7. Items are 8x8 pictures, so four fit round one table tile but are cramped; if that reads badly in play, the fix is a bigger tabletop rather than smaller art.
+
 ### Rules as built (src/game)
 
 - A table is one tile with four chairs on its orthogonal neighbours (seat 0 north, 1 east, 2 south, 3 west); the chairs and the table are solid. The hall is 15 by 11 tiles under a 16 px HUD row.
@@ -48,7 +52,7 @@ Six archetypes, each with a fixed grudge that names *another archetype*, not an 
 
 ### Still open
 
-- Palette, font choice and the title-screen look.
+- The title-screen look, and a joke line for the Marital Aid (the sprite exists; no text yet).
 - Level goals as data: which guests must die, which must live, and whether the napkin counts as a goal item.
 - The text voice for guests and the Marital Aid jokes.
 
