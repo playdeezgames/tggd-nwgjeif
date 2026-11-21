@@ -14,6 +14,8 @@ MADE ENTIRELY BY AI (Claude): turn actual tables at a dinner party until the rig
 
 ## Paste this as the page description
 
+**Latest version:** https://playdeezgames.github.io/tggd-nwgjeif/
+
 **THIS METAPHOR WAS MADE ENTIRELY BY AI.** The code, the pixel art, the sound effects, the puzzles and this page were all made by Claude (generative AI, by Anthropic), working alongside TheGrumpyGameDev, who chose the idea and every rule. No part of it is hand-drawn, hand-written or hand-coded. It says so on the cover, on the title screen and here, so that nobody has to wonder.
 
 Everyone at this dinner wants someone else dead. You are only the waiter.
