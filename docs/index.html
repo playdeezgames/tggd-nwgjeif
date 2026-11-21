@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Table Turners of SPLORR!!</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { image-rendering: pixelated; touch-action: none;
+           width: min(100vw, calc(100vh * 240 / 192)); }
+  #pad { display: none; position: fixed; left: 0; right: 0; bottom: 0; padding: 12px;
+         justify-content: space-between; align-items: flex-end; pointer-events: none;
+         user-select: none; -webkit-user-select: none; }
+  body.touch #pad { display: flex; }
+  #pad button { pointer-events: auto; touch-action: none; font: bold 18px monospace; color: #f4f4f4;
+                background: rgba(244,244,244,.18); border: 2px solid rgba(244,244,244,.45);
+                border-radius: 12px; }
+  #pad button.on { background: rgba(244,180,27,.55); }
+  #dpad { display: grid; grid-template: repeat(3, 52px) / repeat(3, 52px); gap: 4px; }
+  #side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  #act { width: 92px; height: 92px; border-radius: 50% !important; }
+  #reset { width: 72px; height: 36px; font-size: 13px !important; }
+</style>
+</head>
+<body>
+<canvas id="screen" width="240" height="192"></canvas>
+<div id="pad">
+  <div id="dpad">
+    <span></span><button data-code="0" data-repeat aria-label="up">&#9650;</button><span></span>
+    <button data-code="2" data-repeat aria-label="left">&#9664;</button><span></span><button data-code="3" data-repeat aria-label="right">&#9654;</button>
+    <span></span><button data-code="1" data-repeat aria-label="down">&#9660;</button><span></span>
+  </div>
+  <div id="side">
+    <button id="reset" data-code="5" aria-label="try the level again">RESET</button>
+    <button id="act" data-code="4" aria-label="crank">CRANK</button>
+  </div>
+</div>
+<script type="text/javascript" src="odin.js"></script>
+<script>
+  const cv = document.getElementById("screen");
+  const ctx = cv.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  const atlas = new Image();
+  atlas.src = "art.png";
+  const SPRITE = 16;
+  const css = (rgb) => "#" + (rgb >>> 0).toString(16).padStart(6, "0");
+  // Bitmap font: m5x7, ASCII 32..126 in a 16x6 grid of 8x9 cells, 7 rows above the baseline.
+  const FONT_W = 8, FONT_H = 9, FONT_BASE = 7;
+  const font = new Image();
+  font.src = "font.png";
+  const fontAdvance = [];
+  const fontTinted = new Map();
+  font.onload = () => {
+    const probe = document.createElement("canvas");
+    probe.width = font.width; probe.height = font.height;
+    const pc = probe.getContext("2d");
+    pc.drawImage(font, 0, 0);
+    const px = pc.getImageData(0, 0, font.width, font.height).data;
+    for (let i = 0; i < 95; i++) {
+      const cx = (i % 16) * FONT_W, cy = Math.floor(i / 16) * FONT_H;
+      let right = -1;
+      for (let x = 0; x < FONT_W; x++)
+        for (let y = 0; y < FONT_H; y++)
+          if (px[((cy + y) * font.width + cx + x) * 4 + 3] > 0) right = Math.max(right, x);
+      fontAdvance[i] = right < 0 ? 3 : right + 2; // ink plus one pixel of spacing
+    }
+  };
+  // The sheet tinted to one colour, cached (white ink painted over with source-in).
+  const tintedFont = (rgb) => {
+    let c = fontTinted.get(rgb);
+    if (!c) {
+      c = document.createElement("canvas");
+      c.width = font.width; c.height = font.height;
+      const g = c.getContext("2d");
+      g.drawImage(font, 0, 0);
+      g.globalCompositeOperation = "source-in";
+      g.fillStyle = css(rgb);
+      g.fillRect(0, 0, c.width, c.height);
+      fontTinted.set(rgb, c);
+    }
+    return c;
+  };
+  const drawBitmapText = (x, y, str, rgb, scale, centered) => {
+    if (!fontAdvance.length) return; // font not decoded yet
+    const idx = (ch) => { const i = ch.charCodeAt(0) - 32; return i >= 0 && i < 95 ? i : 0; };
+    let width = 0;
+    for (const ch of str) width += fontAdvance[idx(ch)] * scale;
+    let px = Math.round(centered ? x - width / 2 : x);
+    px = Math.max(1, Math.min(px, cv.width - 1 - width)); // keep the text on screen
+    const top = Math.round(y) - FONT_BASE * scale;
+    const sheet = tintedFont(rgb);
+    for (const ch of str) {
+      const i = idx(ch);
+      ctx.drawImage(sheet, (i % 16) * FONT_W, Math.floor(i / 16) * FONT_H, FONT_W, FONT_H,
+                    px, top, FONT_W * scale, FONT_H * scale);
+      px += fontAdvance[i] * scale;
+    }
+  };
+  // Order must match `Sound` in src/game/art.odin.
+  const SOUND_FILES = ["crank", "strike", "drink", "saved", "caught", "won", "lost"].map(n => "sfx/" + n + ".wav");
+  const sounds = [];
+  let audio = null;
+  const unlock = () => {
+    if (audio) return;
+    try {
+      audio = new (window.AudioContext || window.webkitAudioContext)();
+      SOUND_FILES.forEach((f, i) => fetch(f).then(r => r.arrayBuffer())
+        .then(b => audio.decodeAudioData(b)).then(buf => { sounds[i] = buf; }).catch(() => {}));
+    } catch (e) { audio = null; }
+  };
+  for (const ev of ["keydown", "pointerdown"]) window.addEventListener(ev, unlock);
+  const memory = new odin.WasmMemoryInterface();
+  // QA: index.html#level=7 jumps to level 7; #level=7&keys=DRRC then plays pad presses (U D L R walk, C crank,
+  // X restart), used by tools/make_shots.sh for screenshots.
+  const qa = /^#level=([0-9]+)(?:&keys=([UDLRCX]*))?$/.exec(location.hash);
+  if (qa) {
+    const t = setInterval(() => {
+      const ex = memory.exports;
+      if (ex && ex.qa_level && ex.pad) {
+        clearInterval(t);
+        ex.qa_level(Number(qa[1]));
+        for (const ch of qa[2] || "") ex.pad({ U: 0, D: 1, L: 2, R: 3, C: 4, X: 5 }[ch]);
+      }
+    }, 50);
+  }
+  // A tap on the canvas goes to the game in logical pixels (240 by 192).
+  cv.addEventListener("pointerdown", (e) => {
+    const ex = memory.exports;
+    if (!ex || !ex.tap_at) return;
+    const r = cv.getBoundingClientRect();
+    ex.tap_at(Math.floor((e.clientX - r.left) * cv.width / r.width), Math.floor((e.clientY - r.top) * cv.height / r.height));
+  });
+
+  // The on-screen pad shows on touch devices; the game is told so its title names it.
+  let padShown = false;
+  const syncTouchUi = () => {
+    if (!padShown) return true;
+    const ex = memory.exports;
+    if (ex && ex.set_touch_ui) { ex.set_touch_ui(1); return true; }
+    return false;
+  };
+  const showPad = () => {
+    document.body.classList.add("touch");
+    padShown = true;
+    if (!syncTouchUi()) { const t = setInterval(() => { if (syncTouchUi()) clearInterval(t); }, 50); }
+  };
+  if (window.matchMedia && matchMedia("(pointer: coarse)").matches) showPad();
+  window.addEventListener("touchstart", showPad, { once: true, passive: true });
+  // Direction buttons repeat while held; the others fire once.
+  for (const b of document.querySelectorAll("#pad button")) {
+    const code = Number(b.dataset.code);
+    let delay = null, timer = null;
+    const press = () => { if (memory.exports && memory.exports.pad) memory.exports.pad(code); };
+    const stop = () => { clearTimeout(delay); clearInterval(timer); b.classList.remove("on"); };
+    b.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      try { b.setPointerCapture(e.pointerId); } catch (err) {}
+      b.classList.add("on");
+      press();
+      if (b.hasAttribute("data-repeat")) {
+        delay = setTimeout(() => { timer = setInterval(press, 130); }, 320);
+      }
+    });
+    for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) b.addEventListener(ev, stop);
+  }
+  odin.runWasm("game.wasm", null, {
+    canvas: {
+      fill_rect: (x, y, w, h, rgb, alpha) => {
+        ctx.globalAlpha = alpha; ctx.fillStyle = css(rgb); ctx.fillRect(x, y, w, h); ctx.globalAlpha = 1;
+      },
+      blit: (sprite, x, y, alpha) => {
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(atlas, sprite * SPRITE, 0, SPRITE, SPRITE, Math.round(x), Math.round(y), SPRITE, SPRITE);
+        ctx.globalAlpha = 1;
+      },
+      play_sound: (id) => {
+        if (!audio || !sounds[id]) return;
+        const src = audio.createBufferSource();
+        src.buffer = sounds[id];
+        const gain = audio.createGain();
+        gain.gain.value = 0.3;
+        src.connect(gain).connect(audio.destination);
+        src.start();
+      },
+      draw_text: (x, y, ptr, len, rgb, scale, centered) => {
+        drawBitmapText(x, y, memory.loadString(ptr, len), rgb, scale, centered);
+      },
+    },
+  }, memory);
+</script>
+</body>
+</html>
